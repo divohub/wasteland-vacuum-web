@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Wasteland Vacuum TD</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <!-- Yandex Games SDK v2 (relative path required by Yandex Games moderation; safe no-op off-platform) -->
+  <script src="/sdk.js"></script>
+  <!-- VK Bridge (auto-loaded only when running inside VK Games / VK Mini Apps) -->
+  <script>
+    (function () {
+      try {
+        var qs = window.location.search || "";
+        if (qs.indexOf("vk_app_id=") >= 0 || qs.indexOf("vk_user_id=") >= 0) {
+          window.__isVkEnv = true;
+          var s = document.createElement("script");
+          s.src = "https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js";
+          s.async = false;
+          s.onload = function () {
+            try {
+              if (window.vkBridge && window.vkBridge.send) {
+                window.vkBridge.send("VKWebAppInit");
+              }
+            } catch (e) {}
+          };
+          document.head.appendChild(s);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <!-- Yandex.Metrika counter -->
+  <script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+      m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+      m[i].l=1*new Date();
+      for (var j = 0; j < document.scripts.length; j++) { if (document.scripts[j].src === r) { return; } }
+      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a);
+    })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+    ym(114486660, "init", {
+      clickmap: false,
+      trackLinks: false,
+      accurateTrackBounce: true,
+      webvisor: false
+    });
+
+    window.WastelandMetrika = {
+      counterId: 114486660,
+      goal: function(goalName, paramsJson) {
+        try {
+          if (typeof window.ym !== "function") return;
+          var parsed = undefined;
+          if (paramsJson && paramsJson.length > 0) {
+            parsed = JSON.parse(paramsJson);
+          }
+          window.ym(this.counterId, "reachGoal", goalName, parsed);
+        } catch (e) {}
+      },
+      params: function(paramsJson) {
+        try {
+          if (typeof window.ym !== "function" || !paramsJson) return;
+          window.ym(this.counterId, "params", JSON.parse(paramsJson));
+        } catch (e) {}
+      }
+    };
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/114486660" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <!-- /Yandex.Metrika counter -->
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #1d1a16 0%, #0d0c0b 100%);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #f4e6c8;
+      touch-action: none;
+    }
+    #stage {
+      width: 100vw;
+      height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #frame {
+      position: relative;
+      height: 100dvh;
+      width: min(100vw, calc(100dvh * 9 / 16));
+      max-height: 100dvh;
+      background: #141210;
+      box-shadow: 0 0 48px rgba(0, 0, 0, 0.85);
+      overflow: hidden;
+    }
+    @media (max-aspect-ratio: 9/16) {
+      #frame {
+        width: 100vw;
+        height: 100dvh;
+        box-shadow: none;
+      }
+    }
+    #unity-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+      background: #141210;
+    }
+    #loading-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 24px 9vh 24px;
+      gap: 12px;
+      background:
+        linear-gradient(180deg, rgba(14, 12, 11, 0) 64%, rgba(14, 12, 11, 0.94) 88%, rgba(14, 12, 11, 1) 100%),
+        url('loading_splash.jpg') center top / cover no-repeat,
+        #0e0c0b;
+      z-index: 10;
+      transition: opacity 0.28s ease;
+    }
+    #loading-track {
+      width: 82%;
+      max-width: 320px;
+      height: 18px;
+      background: rgba(20, 17, 15, 0.92);
+      border: 2px solid #ffb636;
+      border-radius: 9px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.75);
+    }
+    #loading-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #ff6a14 0%, #ffd84d 100%);
+      transition: width 0.1s linear;
+    }
+    #loading-pct {
+      font-weight: 800;
+      font-size: 14px;
+      color: #ffe39b;
+      letter-spacing: 1.2px;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+    }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+  <div id="stage">
+    <div id="frame">
+      <canvas id="unity-canvas" tabindex="-1" oncontextmenu="return false;"></canvas>
+      <div id="loading-overlay">
+        <div id="loading-track"><div id="loading-fill"></div></div>
+        <div id="loading-pct">ЗАГРУЗКА 0%</div>
+      </div>
+    </div>
+  </div>
+  <script src="Build/WebGL.loader.js"></script>
+  <script>
+    const canvas = document.querySelector("#unity-canvas");
+    const overlay = document.querySelector("#loading-overlay");
+    const fill = document.querySelector("#loading-fill");
+    const pct = document.querySelector("#loading-pct");
+    const loadStartedMs = Date.now();
+
+    // Prevent browser scroll / context menu inside Yandex Games iframe
+    window.addEventListener("contextmenu", (e) => e.preventDefault());
+    window.addEventListener("keydown", (e) => {
+      if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // Immediate audio mute when browser tab loses visibility (Yandex Games moderation req 2.13)
+    document.addEventListener("visibilitychange", () => {
+      try {
+        if (window.unityInstance && window.__yaUnityGo) {
+          window.unityInstance.SendMessage(window.__yaUnityGo, "OnYaVisibilityChanged", document.hidden ? "1" : "0");
+        }
+      } catch (e) {}
+    });
+
+    const platformName = (function () {
+      try {
+        if (window.__isVkEnv || (window.location.search || "").indexOf("vk_app_id=") >= 0) return "vk";
+        if (typeof YaGames !== "undefined" || (window.location.hostname || "").indexOf("yandex") >= 0) return "yandex";
+      } catch (e) {}
+      return "web";
+    })();
+
+    if (window.WastelandMetrika) {
+      window.WastelandMetrika.params(JSON.stringify({ platform: platformName }));
+      window.WastelandMetrika.goal("page_load_start", JSON.stringify({
+        platform: platformName,
+        mobile: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 1 : 0,
+        w: window.innerWidth,
+        h: window.innerHeight
+      }));
+    }
+
+    const config = {
+      dataUrl: "Build/WebGL.data.unityweb",
+      frameworkUrl: "Build/WebGL.framework.js.unityweb",
+      codeUrl: "Build/WebGL.wasm.unityweb",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "WastelandStudio",
+      productName: "Wasteland Vacuum TD",
+      productVersion: "0.1.0",
+      matchWebGLToCanvasSize: true,
+      devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+    };
+
+    createUnityInstance(canvas, config, (progress) => {
+      const p = Math.round(progress * 100);
+      fill.style.width = p + "%";
+      pct.textContent = "ЗАГРУЗКА " + p + "%";
+    }).then((instance) => {
+      window.unityInstance = instance;
+      overlay.style.opacity = "0";
+      setTimeout(() => overlay.remove(), 260);
+      if (window.WastelandMetrika) {
+        window.WastelandMetrika.goal("unity_ready", JSON.stringify({
+          load_sec: Math.round((Date.now() - loadStartedMs) / 1000)
+        }));
+      }
+    }).catch((err) => {
+      pct.textContent = "LOAD ERROR: " + err;
+      if (window.WastelandMetrika) {
+        window.WastelandMetrika.goal("unity_load_error", JSON.stringify({ err: String(err).slice(0, 120) }));
+      }
+    });
+  </script>
+</body>
+</html>
